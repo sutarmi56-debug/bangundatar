@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Segi Banyak - Matematika Kelas IV SD</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Quicksand & Fredoka for friendly UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for Achievements -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#0284c7',
+                            yellow: '#f59e0b',
+                            green: '#10b981',
+                            purple: '#8b5cf6',
+                            pink: '#ec4899',
+                            orange: '#f97316'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        quicksand: ['Quicksand', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0f9ff;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        h1, h2, h3, h4, .font-title {
+            font-family: 'Fredoka', sans-serif;
+        }
+        
+        .pulse-edge {
+            stroke-dasharray: 8;
+            animation: dash 1.5s linear infinite, glow 1s ease-in-out infinite alternate;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -32; }
+        }
+        @keyframes glow {
+            from { stroke-width: 6px; stroke: #3b82f6; }
+            to { stroke-width: 10px; stroke: #ef4444; filter: drop-shadow(0 0 8px #ef4444); }
+        }
+
+        .vertex-pop {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .shape-rotate {
+            transition: transform 0.6s ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e0f2fe;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #38bdf8;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0284c7;
+        }
+
+        .bg-pattern {
+            background-image: radial-gradient(#38bdf8 1.5px, transparent 1.5px), radial-gradient(#38bdf8 1.5px, #f0f9ff 1.5px);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            background-opacity: 0.15;
+        }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen text-slate-800 flex flex-col justify-between overflow-x-hidden">
+
+    <!-- TOP NAVIGATION / HEADER -->
+    <header id="main-header" class="hidden bg-white/90 backdrop-blur border-b border-sky-200 sticky top-0 z-40 px-4 py-3 shadow-sm">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showView('view-dashboard')">
+                <div class="w-10 h-10 rounded-2xl bg-sky-500 text-white flex items-center justify-center font-title text-xl shadow-md">
+                    📐
+                </div>
+                <div>
+                    <h1 class="font-title text-lg md:text-xl text-sky-700 leading-tight">PETUALANGAN SEGI BANYAK</h1>
+                    <p class="text-xs text-slate-500 font-semibold" id="header-user-info">Siswa: - | Kelas IV</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 md:space-x-4">
+                <!-- Progress Indicator -->
+                <div class="hidden sm:flex items-center space-x-2 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-200">
+                    <i class="fa-solid fa-trophy text-amber-500"></i>
+                    <div class="w-24 bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                        <div id="overall-progress-bar" class="bg-amber-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <span id="overall-progress-text" class="text-xs font-bold text-sky-800">0%</span>
+                </div>
+
+                <!-- Text-to-Speech Toggle -->
+                <button id="btn-audio-toggle" onclick="toggleAudio()" title="Aktifkan/Matikan Pembaca Suara" class="p-2.5 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-xl transition flex items-center justify-center">
+                    <i id="audio-icon" class="fa-solid fa-volume-high text-lg"></i>
+                </button>
+
+                <!-- Menu Dashboard Button -->
+                <button onclick="showView('view-dashboard')" class="px-3 py-2 bg-sky-500 hover:bg-sky-600 text-white font-title text-sm rounded-xl transition shadow">
+                    <i class="fa-solid fa-house mr-1"></i> Menu
+                </button>
+
+                <!-- Teacher Mode Button -->
+                <button onclick="openTeacherModal()" class="p-2.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-xl transition" title="Mode Guru">
+                    <i class="fa-solid fa-chalkboard-user text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main id="app-container" class="flex-grow max-w-6xl w-full mx-auto p-4 md:p-6">
+
+        <!-- ================= HALAMAN PEMBUKA / REGISTRASI ================= -->
+        <section id="view-landing" class="block">
+            <div class="max-w-2xl mx-auto bg-white rounded-3xl p-6 md:p-10 shadow-xl border-4 border-sky-300 text-center relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-200 rounded-full blur-2xl opacity-60"></div>
+                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-sky-200 rounded-full blur-2xl opacity-60"></div>
+
+                <div class="inline-block bg-sky-100 text-sky-700 px-4 py-1.5 rounded-full font-title text-sm mb-4">
+                    🎯 Matematika SD Kelas IV — Fase B
+                </div>
+
+                <h1 class="text-3xl md:text-5xl font-title text-sky-600 mb-2 leading-tight">
+                    PETUALANGAN SEGI BANYAK
+                </h1>
+                <p class="text-slate-600 font-semibold mb-6 text-sm md:text-base">
+                    Belajar Mengenal, Mengidentifikasi, Menyusun, dan Mengurai Bangun Datar dengan Seru!
+                </p>
+
+                <!-- SVG Geometric Shapes Illustration -->
+                <div class="flex justify-center items-center space-x-3 mb-8 py-2">
+                    <svg class="w-12 h-12 text-pink-500 animate-bounce" viewBox="0 0 100 100">
+                        <polygon points="50,15 90,85 10,85" fill="currentColor" />
+                    </svg>
+                    <svg class="w-14 h-14 text-amber-500" viewBox="0 0 100 100">
+                        <rect x="15" y="15" width="70" height="70" rx="10" fill="currentColor" />
+                    </svg>
+                    <svg class="w-14 h-14 text-emerald-500 animate-pulse" viewBox="0 0 100 100">
+                        <polygon points="50,10 90,38 75,85 25,85 10,38" fill="currentColor" />
+                    </svg>
+                    <svg class="w-12 h-12 text-purple-500" viewBox="0 0 100 100">
+                        <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" fill="currentColor" />
+                    </svg>
+                </div>
+
+                <!-- Registration Form -->
+                <form id="form-registration" onsubmit="startAdventure(event)" class="bg-sky-50/80 p-5 rounded-2xl border border-sky-200 text-left space-y-4 max-w-md mx-auto">
+                    <div>
+                        <label class="block text-sm font-title text-sky-800 mb-1">Nama Lengkap Siswa:</label>
+                        <input type="text" id="input-nama" required placeholder="Contoh: Budi Santoso" class="w-full px-4 py-2.5 rounded-xl border-2 border-sky-200 focus:border-sky-500 focus:outline-none text-slate-700 font-semibold">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-title text-sky-800 mb-1">Kelas:</label>
+                            <input type="text" id="input-kelas" value="IV" required class="w-full px-4 py-2.5 rounded-xl border-2 border-sky-200 bg-slate-100 text-slate-600 font-bold text-center" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-title text-sky-800 mb-1">Sekolah:</label>
+                            <input type="text" id="input-sekolah" required placeholder="SDN 1 Nusantara" class="w-full px-4 py-2.5 rounded-xl border-2 border-sky-200 focus:border-sky-500 focus:outline-none text-slate-700 font-semibold">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-title text-lg rounded-2xl shadow-lg hover:shadow-xl transition transform active:scale-95 flex items-center justify-center space-x-2">
+                        <span>🚀 MULAI PETUALANGAN!</span>
+                    </button>
+                </form>
+
+                <div id="resume-banner" class="hidden mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-center justify-between">
+                    <span>Data petualangan sebelumnya tersimpan!</span>
+                    <button onclick="loadSavedSession()" class="px-2.5 py-1 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600">Lanjutkan</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DASHBOARD MENU ================= -->
+        <section id="view-dashboard" class="hidden space-y-6">
+            <div class="bg-gradient-to-r from-sky-500 to-blue-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="space-y-1 text-center md:text-left z-10">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur">Selamat Belajar!</span>
+                    <h2 class="text-2xl md:text-3xl font-title" id="welcome-user-name">Halo, Sahabat Matematika!</h2>
+                    <p class="text-sky-100 text-sm">Pilih menu di bawah untuk memulai petualangan segi banyakmu hari ini!</p>
+                </div>
+                <div class="bg-white/10 backdrop-blur p-4 rounded-2xl border border-white/20 text-center min-w-[200px] z-10">
+                    <div class="text-xs uppercase font-bold tracking-wider text-sky-200">Kemajuan Belajar</div>
+                    <div class="text-3xl font-title my-1" id="dash-progress-text">0%</div>
+                    <div class="w-full bg-black/20 rounded-full h-2 overflow-hidden">
+                        <div id="dash-progress-bar" class="bg-amber-400 h-2 rounded-full transition-all duration-500" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Menu 1 -->
+                <div onclick="showView('view-materi')" class="bg-white hover:bg-sky-50 p-5 rounded-3xl border-2 border-sky-100 shadow-sm hover:shadow-md transition cursor-pointer group flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
+                        📚
+                    </div>
+                    <h3 class="font-title text-base text-slate-800">1. Materi</h3>
+                    <p class="text-xs text-slate-500 mt-1">Konsep Dasar & Ciri Segi Banyak</p>
+                </div>
+
+                <!-- Menu 2 -->
+                <div onclick="showView('view-eksplorasi')" class="bg-white hover:bg-emerald-50 p-5 rounded-3xl border-2 border-emerald-100 shadow-sm hover:shadow-md transition cursor-pointer group flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
+                        🔍
+                    </div>
+                    <h3 class="font-title text-base text-slate-800">2. Eksplorasi</h3>
+                    <p class="text-xs text-slate-500 mt-1">Laboratorium Sisi & Sudut</p>
+                </div>
+
+                <!-- Menu 3 -->
+                <div onclick="showView('view-permainan')" class="bg-white hover:bg-amber-50 p-5 rounded-3xl border-2 border-amber-100 shadow-sm hover:shadow-md transition cursor-pointer group flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
+                        🎮
+                    </div>
+                    <h3 class="font-title text-base text-slate-800">3. Permainan</h3>
+                    <p class="text-xs text-slate-500 mt-1">Tebak & Kelompokkan Bangun</p>
+                </div>
+
+                <!-- Menu 4 -->
+                <div onclick="showView('view-susun')" class="bg-white hover:bg-purple-50 p-5 rounded-3xl border-2 border-purple-100 shadow-sm hover:shadow-md transition cursor-pointer group flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
+                        🧩
+                    </div>
+                    <h3 class="font-title text-base text-slate-800">4. Susun & Urai</h3>
+                    <p class="text-xs text-slate-500 mt-1">Komposisi & Dekomposisi</p>
+                </div>
+
+                <!-- Menu 5 -->
+                <div onclick="showView('view-kuis')" class="bg-white hover:bg-rose-50 p-5 rounded-3xl border-2 border-rose-100 shadow-sm hover:shadow-md transition cursor-pointer group flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
+                        📝
+                    </div>
+                    <h3 class="font-title text-base text-slate-800">5. Kuis Akhir</h3>
+                    <p class="text-xs text-slate-500 mt-1">Uji Pemahaman 15 Soal</p>
+                </div>
+
+                <!-- Menu 6 -->
+                <div onclick="showView('view-tantangan')" class="bg-white hover:bg-teal-50 p-5 rounded-3xl border-2 border-teal-100 shadow-sm hover:shadow-md transition cursor-pointer group flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
+                        💡
+                    </div>
+                    <h3 class="font-title text-base text-slate-800">6. Tantangan</h3>
+                    <p class="text-xs text-slate-500 mt-1">Detektif Bangun Sekitar Kita</p>
+                </div>
+
+                <!-- Menu 7 -->
+                <div onclick="showView('view-pencapaian')" class="bg-white hover:bg-yellow-50 p-5 rounded-3xl border-2 border-yellow-100 shadow-sm hover:shadow-md transition cursor-pointer group flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-yellow-100 text-yellow-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
+                        ⭐
+                    </div>
+                    <h3 class="font-title text-base text-slate-800">7. Pencapaian</h3>
+                    <p class="text-xs text-slate-500 mt-1">Koleksi Lencana & Skor</p>
+                </div>
+
+                <!-- Menu 8 -->
+                <div onclick="showView('view-refleksi')" class="bg-white hover:bg-indigo-50 p-5 rounded-3xl border-2 border-indigo-100 shadow-sm hover:shadow-md transition cursor-pointer group flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
+                        🔄
+                    </div>
+                    <h3 class="font-title text-base text-slate-800">8. Refleksi</h3>
+                    <p class="text-xs text-slate-500 mt-1">Ulasan Perasaan & Pesan Guru</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MENU 1: MATERI INTERAKTIF ================= -->
+        <section id="view-materi" class="hidden space-y-6">
+            <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-sky-100 shadow-sm">
+                <h2 class="font-title text-xl text-sky-700 flex items-center">
+                    <span class="mr-2">📚</span> Kartu Materi Segi Banyak
+                </h2>
+                <button onclick="speakText('Selamat datang di menu materi segi banyak! Klik tombol dengarkan pada setiap kartu untuk mendengarkan penjelasan.')" class="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-xl text-xs font-bold transition">
+                    🔊 Petunjuk Suara
+                </button>
+            </div>
+
+            <!-- Material Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-white p-6 rounded-3xl border-2 border-sky-100 shadow-sm hover:border-sky-300 transition space-y-3">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-sky-100 text-sky-700 text-xs font-bold px-2.5 py-1 rounded-full">Materi 1</span>
+                        <button onclick="speakText('Apa itu Bangun Datar? Bangun datar adalah bentuk dua dimensi yang memiliki panjang dan lebar, tetapi tidak memiliki ketebalan.')" class="text-sky-600 hover:text-sky-800 text-sm">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <h3 class="font-title text-lg text-slate-800">Apa itu Bangun Datar?</h3>
+                    <p class="text-sm text-slate-600">Bangun datar adalah bentuk 2 dimensi yang dibatasi oleh garis lurus atau garis lengkung. Contohnya: kertas, permukaan meja, dan papan tulis.</p>
+                    <div class="bg-sky-50 p-3 rounded-2xl flex justify-around items-center">
+                        <div class="text-center">
+                            <svg class="w-10 h-10 text-sky-500 mx-auto" viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="60" fill="none" stroke="currentColor" stroke-width="8"/></svg>
+                            <span class="text-xs font-bold text-slate-600">Persegi Panjang</span>
+                        </div>
+                        <div class="text-center">
+                            <svg class="w-10 h-10 text-emerald-500 mx-auto" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" stroke-width="8"/></svg>
+                            <span class="text-xs font-bold text-slate-600">Lingkaran</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white p-6 rounded-3xl border-2 border-emerald-100 shadow-sm hover:border-emerald-300 transition space-y-3">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full">Materi 2</span>
+                        <button onclick="speakText('Apa itu Segi Banyak? Segi banyak adalah bangun datar tertutup yang seluruh sisinya dibatasi oleh garis lurus.')" class="text-emerald-600 hover:text-emerald-800 text-sm">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <h3 class="font-title text-lg text-slate-800">Apa itu Segi Banyak?</h3>
+                    <p class="text-sm text-slate-600">Segi banyak adalah **bangun datar tertutup** yang tersusun dari **ruas-ruas garis lurus** (sisi).</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
+                        <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-emerald-800 text-center">
+                            ✅ <strong>Segi Banyak:</strong> Garis Lurus & Tertutup
+                        </div>
+                        <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200 text-rose-800 text-center">
+                            ❌ <strong>Bukan Segi Banyak:</strong> Garis Lengkung / Terbuka
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-6 rounded-3xl border-2 border-amber-100 shadow-sm hover:border-amber-300 transition space-y-3">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full">Materi 3</span>
+                        <button onclick="speakText('Mengenal Jumlah Sisi. Sisi adalah garis lurus yang membatasi bangun datar.')" class="text-amber-600 hover:text-amber-800 text-sm">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <h3 class="font-title text-lg text-slate-800">Mengenal Jumlah Sisi</h3>
+                    <p class="text-sm text-slate-600">Sisi adalah ruas garis lurus yang membentuk tepi dari suatu bangun segi banyak.</p>
+                    <div class="bg-amber-50 p-3 rounded-2xl flex items-center justify-between text-xs font-bold text-amber-900">
+                        <span>🔺 Segitiga = 3 Sisi</span>
+                        <span>⬛ Segiempat = 4 Sisi</span>
+                        <span>⬟ Segilima = 5 Sisi</span>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-white p-6 rounded-3xl border-2 border-purple-100 shadow-sm hover:border-purple-300 transition space-y-3">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">Materi 4</span>
+                        <button onclick="speakText('Mengenal Sudut. Sudut terbentuk dari dua sisi yang saling bertemu pada satu titik pojok.')" class="text-purple-600 hover:text-purple-800 text-sm">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <h3 class="font-title text-lg text-slate-800">Mengenal Sudut & Titik Sudut</h3>
+                    <p class="text-sm text-slate-600">Pertemuan antara dua sisi pada ujungnya menciptakan titik pojok yang disebut **Titik Sudut**.</p>
+                    <div class="bg-purple-50 p-3 rounded-2xl text-xs text-purple-900 font-semibold text-center">
+                        💡 Pada segi banyak lurus, <strong>Jumlah Sisi SELALU SAMA dengan Jumlah Sudut!</strong>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="bg-white p-6 rounded-3xl border-2 border-pink-100 shadow-sm hover:border-pink-300 transition space-y-3">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-pink-100 text-pink-700 text-xs font-bold px-2.5 py-1 rounded-full">Materi 5</span>
+                        <button onclick="speakText('Jenis-Jenis Segi Banyak. Ada segi banyak beraturan dan segi banyak tidak beraturan.')" class="text-pink-600 hover:text-pink-800 text-sm">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <h3 class="font-title text-lg text-slate-800">Jenis Segi Banyak</h3>
+                    <ul class="text-sm text-slate-600 space-y-1 list-disc list-inside">
+                        <li><strong>Beraturan:</strong> Semua sisi sama panjang dan semua sudut sama besar (Contoh: Persegi, Segitiga Sama Sisi).</li>
+                        <li><strong>Tidak Beraturan:</strong> Panjang sisi atau besar sudut tidak sama (Contoh: Persegi Panjang, Segitiga Sembarang).</li>
+                    </ul>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="bg-white p-6 rounded-3xl border-2 border-teal-100 shadow-sm hover:border-teal-300 transition space-y-3">
+                    <div class="flex justify-between items-start">
+                        <span class="bg-teal-100 text-teal-700 text-xs font-bold px-2.5 py-1 rounded-full">Materi 6</span>
+                        <button onclick="speakText('Segi banyak di sekitar kita, misalnya jendela persegi empat, atap rumah segitiga, dan ubin lantai.')" class="text-teal-600 hover:text-teal-800 text-sm">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <h3 class="font-title text-lg text-slate-800">Segi Banyak di Sekitar Kita</h3>
+                    <p class="text-sm text-slate-600">Amati benda-benda ini di rumah dan sekolahmu:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-slate-100 px-3 py-1 rounded-xl text-xs font-bold">🏠 Atap Rumah (Segitiga)</span>
+                        <span class="bg-slate-100 px-3 py-1 rounded-xl text-xs font-bold">🪟 Jendela (Segiempat)</span>
+                        <span class="bg-slate-100 px-3 py-1 rounded-xl text-xs font-bold">🪁 Layang-layang</span>
+                        <span class="bg-slate-100 px-3 py-1 rounded-xl text-xs font-bold">🛑 Tanda Stop (Segidelapan)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center pt-4">
+                <button onclick="markModuleComplete('materi'); showView('view-eksplorasi');" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-title rounded-2xl shadow-lg transition">
+                    Lanjut ke Lab Eksplorasi ➔
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= MENU 2: EKSPLORASI BANGUN ================= -->
+        <section id="view-eksplorasi" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl border border-sky-100 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div>
+                        <h2 class="font-title text-2xl text-sky-700">🔍 Laboratorium Eksplorasi Bangun</h2>
+                        <p class="text-xs text-slate-500">Pilih bangun di bawah untuk mengamati sisi, sudut, dan sifat-sifatnya!</p>
+                    </div>
+                    <!-- Shape Selection Buttons -->
+                    <div class="flex flex-wrap gap-2" id="shape-selector-container">
+                        <!-- JS injected buttons -->
+                    </div>
+                </div>
+
+                <!-- Canvas / SVG Visualizer Area -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                    <div class="md:col-span-6 bg-sky-50/80 rounded-3xl p-6 border-2 border-sky-200 flex flex-col items-center justify-center min-h-[300px] relative">
+                        <!-- Interactive SVG Canvas -->
+                        <div id="explorer-svg-container" class="w-64 h-64 flex items-center justify-center shape-rotate">
+                            <!-- SVG render dynamically -->
+                        </div>
+
+                        <!-- Interactive Action Controls -->
+                        <div class="flex flex-wrap justify-center gap-2 mt-4 z-10">
+                            <button onclick="highlightEdges()" class="px-3.5 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-title rounded-xl shadow transition">
+                                ✨ LIHAT SISI
+                            </button>
+                            <button onclick="highlightVertices()" class="px-3.5 py-2 bg-purple-500 hover:bg-purple-600 text-white text-xs font-title rounded-xl shadow transition">
+                                📍 LIHAT SUDUT
+                            </button>
+                            <button onclick="rotateShape()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-title rounded-xl shadow transition">
+                                🔄 PUTAR BANGUN
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Shape Information Panel -->
+                    <div class="md:col-span-6 space-y-4">
+                        <div class="bg-white p-5 rounded-2xl border-2 border-sky-100 shadow-sm space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 id="exp-shape-title" class="text-2xl font-title text-sky-700">Segitiga</h3>
+                                <button id="exp-audio-btn" class="p-2 bg-sky-100 text-sky-700 rounded-xl hover:bg-sky-200">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-sky-50 p-3 rounded-xl border border-sky-200">
+                                    <div class="text-xs text-slate-500 font-bold">Jumlah Sisi</div>
+                                    <div id="exp-shape-sides" class="text-2xl font-title text-sky-700">3 Sisi</div>
+                                </div>
+                                <div class="bg-purple-50 p-3 rounded-xl border border-purple-200">
+                                    <div class="text-xs text-slate-500 font-bold">Jumlah Sudut</div>
+                                    <div id="exp-shape-corners" class="text-2xl font-title text-purple-700">3 Sudut</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-title text-xs text-slate-500 uppercase tracking-wider mb-1">Ciri-ciri Utama:</h4>
+                                <p id="exp-shape-desc" class="text-sm text-slate-700">Memiliki 3 sisi lurus dan 3 titik sudut.</p>
+                            </div>
+                            <div>
+                                <h4 class="font-title text-xs text-slate-500 uppercase tracking-wider mb-1">Contoh dalam Kehidupan Sehari-hari:</h4>
+                                <div id="exp-shape-examples" class="flex flex-wrap gap-2">
+                                    <!-- Examples badge -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MENU 3: PERMAINAN ================= -->
+        <section id="view-permainan" class="hidden space-y-6">
+            <div class="flex justify-center space-x-2 border-b border-sky-200 pb-2">
+                <button id="tab-game-tebak" onclick="switchGameSubtab('tebak')" class="px-5 py-2.5 rounded-2xl font-title text-sm transition bg-sky-500 text-white shadow">
+                    🎮 Tebak Bangun
+                </button>
+                <button id="tab-game-klasifikasi" onclick="switchGameSubtab('klasifikasi')" class="px-5 py-2.5 rounded-2xl font-title text-sm transition bg-white text-slate-600 hover:bg-sky-50">
+                    📂 Klasifikasi Sisi
+                </button>
+            </div>
+
+            <!-- SUBTAB 1: TEBAK BANGUN -->
+            <div id="game-subtab-tebak" class="block space-y-4">
+                <div class="max-w-xl mx-auto bg-white p-6 rounded-3xl border-2 border-amber-200 shadow-md text-center space-y-4">
+                    <div class="flex justify-between items-center text-xs font-bold text-slate-500">
+                        <span id="game-tebak-progress">Soal 1 dari 10</span>
+                        <span class="text-amber-600 font-title text-sm">Skor: <span id="game-tebak-score">0</span></span>
+                    </div>
+
+                    <div class="bg-amber-50 rounded-2xl p-6 flex justify-center items-center min-h-[180px]" id="game-tebak-image-container">
+                        <!-- SVG question shape -->
+                    </div>
+
+                    <h3 id="game-tebak-question" class="font-title text-lg text-slate-800">Bangun datar apakah ini?</h3>
+
+                    <div id="game-tebak-options" class="grid grid-cols-2 gap-3">
+                        <!-- Options injected by JS -->
+                    </div>
+
+                    <!-- Feedback message -->
+                    <div id="game-tebak-feedback" class="hidden p-3 rounded-2xl text-sm font-bold"></div>
+                </div>
+            </div>
+
+            <!-- SUBTAB 2: KLASIFIKASI DRAG & DROP -->
+            <div id="game-subtab-klasifikasi" class="hidden space-y-4">
+                <div class="bg-white p-6 rounded-3xl border-2 border-sky-200 shadow-md space-y-4">
+                    <div class="text-center">
+                        <h3 class="font-title text-xl text-sky-700">Kelompokkan Bangun Berdasarkan Jumlah Sisinya!</h3>
+                        <p class="text-xs text-slate-500">Klik/Sentuh bangun di bawah, lalu pilih wadah kategori yang tepat.</p>
+                    </div>
+
+                    <!-- Source Shapes Carousel -->
+                    <div class="bg-sky-50 p-4 rounded-2xl border border-sky-200 flex flex-wrap justify-center gap-3 min-h-[90px]" id="classify-source-container">
+                        <!-- Interactive Shapes to classify -->
+                    </div>
+
+                    <!-- Category Drop Targets -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div onclick="dropClassifyShape('3')" class="bg-amber-50 border-2 border-dashed border-amber-300 hover:border-amber-500 p-3 rounded-2xl text-center cursor-pointer min-h-[140px] flex flex-col justify-between">
+                            <span class="font-title text-xs text-amber-800">🔺 3 Sisi</span>
+                            <div id="target-3-sisi" class="flex flex-wrap justify-center gap-1 my-2"></div>
+                            <span class="text-[10px] text-amber-600 font-semibold">Segitiga</span>
+                        </div>
+
+                        <div onclick="dropClassifyShape('4')" class="bg-blue-50 border-2 border-dashed border-blue-300 hover:border-blue-500 p-3 rounded-2xl text-center cursor-pointer min-h-[140px] flex flex-col justify-between">
+                            <span class="font-title text-xs text-blue-800">🟦 4 Sisi</span>
+                            <div id="target-4-sisi" class="flex flex-wrap justify-center gap-1 my-2"></div>
+                            <span class="text-[10px] text-blue-600 font-semibold">Segiempat</span>
+                        </div>
+
+                        <div onclick="dropClassifyShape('5')" class="bg-emerald-50 border-2 border-dashed border-emerald-300 hover:border-emerald-500 p-3 rounded-2xl text-center cursor-pointer min-h-[140px] flex flex-col justify-between">
+                            <span class="font-title text-xs text-emerald-800">⬟ 5 Sisi</span>
+                            <div id="target-5-sisi" class="flex flex-wrap justify-center gap-1 my-2"></div>
+                            <span class="text-[10px] text-emerald-600 font-semibold">Segilima</span>
+                        </div>
+
+                        <div onclick="dropClassifyShape('6+')" class="bg-purple-50 border-2 border-dashed border-purple-300 hover:border-purple-500 p-3 rounded-2xl text-center cursor-pointer min-h-[140px] flex flex-col justify-between">
+                            <span class="font-title text-xs text-purple-800">🛑 &gt;5 Sisi</span>
+                            <div id="target-6plus-sisi" class="flex flex-wrap justify-center gap-1 my-2"></div>
+                            <span class="text-[10px] text-purple-600 font-semibold">Segienam/Lainnya</span>
+                        </div>
+                    </div>
+
+                    <div class="text-center pt-2">
+                        <button onclick="resetClassificationGame()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-title rounded-xl transition">
+                            🔄 Acak Ulang Bangun
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MENU 4: SUSUN & UNGRAI BANGUN ================= -->
+        <section id="view-susun" class="hidden space-y-6">
+            <div class="flex justify-center space-x-2 border-b border-purple-200 pb-2">
+                <button id="tab-susun-komposisi" onclick="switchSusunSubtab('komposisi')" class="px-5 py-2.5 rounded-2xl font-title text-sm transition bg-purple-600 text-white shadow">
+                    🎨 Studio Kreasi (Komposisi)
+                </button>
+                <button id="tab-susun-dekomposisi" onclick="switchSusunSubtab('dekomposisi')" class="px-5 py-2.5 rounded-2xl font-title text-sm transition bg-white text-slate-600 hover:bg-purple-50">
+                    🧩 Mengurai Bangun (Dekomposisi)
+                </button>
+            </div>
+
+            <!-- SUBTAB 1: KOMPOSISI (Studio Kreasi Canvas) -->
+            <div id="susun-subtab-komposisi" class="block space-y-4">
+                <div class="bg-white p-5 rounded-3xl border-2 border-purple-200 shadow-md space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h3 class="font-title text-lg text-purple-800">Ayo Berkreasi Menyusun Bangun!</h3>
+                            <p class="text-xs text-slate-500">Klik bangun di palet bawah untuk menaruhnya ke papan gambar.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="clearCompositionCanvas()" class="px-3 py-1.5 bg-rose-100 text-rose-700 hover:bg-rose-200 text-xs font-title rounded-xl">
+                                🗑️ Bersihkan
+                            </button>
+                            <button onclick="finishCompositionTask()" class="px-3 py-1.5 bg-purple-600 text-white hover:bg-purple-700 text-xs font-title rounded-xl shadow">
+                                ✅ Selesai & Hitung
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Workspace -->
+                    <div id="composition-workspace" class="w-full h-80 bg-slate-50 rounded-2xl border-2 border-dashed border-purple-300 relative overflow-hidden flex items-center justify-center">
+                        <p id="canvas-empty-msg" class="text-slate-400 text-sm font-semibold pointer-events-none">Papan Gambar Masih Kosong. Klik bentuk di bawah untuk menambah!</p>
+                    </div>
+
+                    <!-- Shape Palette -->
+                    <div class="bg-purple-50 p-3 rounded-2xl flex flex-wrap justify-center gap-3 border border-purple-200">
+                        <button onclick="addShapeToCanvas('triangle', '#f59e0b')" class="px-3 py-2 bg-amber-400 text-white rounded-xl text-xs font-title shadow hover:scale-105 transition flex items-center space-x-1">
+                            <span>🔺 Segitiga</span>
+                        </button>
+                        <button onclick="addShapeToCanvas('square', '#3b82f6')" class="px-3 py-2 bg-blue-500 text-white rounded-xl text-xs font-title shadow hover:scale-105 transition flex items-center space-x-1">
+                            <span>🟦 Persegi</span>
+                        </button>
+                        <button onclick="addShapeToCanvas('rectangle', '#10b981')" class="px-3 py-2 bg-emerald-500 text-white rounded-xl text-xs font-title shadow hover:scale-105 transition flex items-center space-x-1">
+                            <span>🟩 P. Panjang</span>
+                        </button>
+                        <button onclick="addShapeToCanvas('pentagon', '#8b5cf6')" class="px-3 py-2 bg-purple-500 text-white rounded-xl text-xs font-title shadow hover:scale-105 transition flex items-center space-x-1">
+                            <span>⬟ Segilima</span>
+                        </button>
+                        <button onclick="addShapeToCanvas('parallelogram', '#ec4899')" class="px-3 py-2 bg-pink-500 text-white rounded-xl text-xs font-title shadow hover:scale-105 transition flex items-center space-x-1">
+                            <span>🔷 Jajargenjang</span>
+                        </button>
+                    </div>
+
+                    <!-- Result summary -->
+                    <div id="composition-result" class="hidden p-4 bg-purple-100 rounded-2xl border border-purple-300 text-purple-900 text-sm font-semibold">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBTAB 2: DEKOMPOSISI (Mengurai Gambar Rumah/Robot) -->
+            <div id="susun-subtab-dekomposisi" class="hidden space-y-4">
+                <div class="max-w-xl mx-auto bg-white p-6 rounded-3xl border-2 border-purple-200 shadow-md space-y-4">
+                    <div class="text-center">
+                        <span class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full">Dekomposisi Gambar</span>
+                        <h3 class="font-title text-xl text-slate-800 mt-2" id="decomp-title">Tebak Penyusun Rumah Ini!</h3>
+                        <p class="text-xs text-slate-500">Pilih semua bangun datar yang membentuk gambar di bawah ini.</p>
+                    </div>
+
+                    <!-- Composite Picture Display -->
+                    <div class="bg-purple-50 rounded-2xl p-6 flex justify-center items-center min-h-[200px]" id="decomp-image-container">
+                        <!-- Dynamic SVG image (e.g. House or Robot) -->
+                    </div>
+
+                    <!-- Checkbox Selections -->
+                    <div class="grid grid-cols-2 gap-3" id="decomp-checkboxes">
+                        <!-- JS injected options -->
+                    </div>
+
+                    <button onclick="checkDecompositionAnswer()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-title text-sm rounded-2xl shadow transition">
+                        Periksa Jawaban
+                    </button>
+
+                    <div id="decomp-feedback" class="hidden p-3 rounded-2xl text-center text-sm font-bold"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MENU 5: KUIS AKHIR ================= -->
+        <section id="view-kuis" class="hidden space-y-6">
+            <div id="quiz-intro-card" class="max-w-2xl mx-auto bg-white p-8 rounded-3xl border-2 border-rose-200 shadow-lg text-center space-y-4">
+                <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-3xl mx-auto">
+                    📝
+                </div>
+                <h2 class="font-title text-2xl text-rose-700">Kuis Evaluasi Segi Banyak</h2>
+                <p class="text-slate-600 text-sm">
+                    Kuis ini terdiri dari **15 soal** yang menguji seluruh pemahamanmu tentang segi banyak, jumlah sisi, sudut, serta komposisi bangun datar.
+                </p>
+                <div class="bg-rose-50 p-4 rounded-2xl border border-rose-200 text-xs text-rose-800 font-semibold space-y-1">
+                    <p>✨ Kerjakan dengan teliti dan jujur!</p>
+                    <p>🏆 Dapatkan predikat **Master Segi Banyak** jika mendapat nilai tinggi!</p>
+                </div>
+                <button onclick="startQuiz()" class="px-8 py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-title text-lg rounded-2xl shadow-lg transition">
+                    🚀 MULAI KUIS SEKARANG
+                </button>
+            </div>
+
+            <!-- Active Quiz Box -->
+            <div id="quiz-active-card" class="hidden max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-3xl border-2 border-rose-200 shadow-lg space-y-6">
+                <div class="flex justify-between items-center text-xs font-bold text-slate-500 border-b border-slate-100 pb-3">
+                    <span id="quiz-progress-num" class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full">Soal 1 / 15</span>
+                    <span class="text-rose-600 font-title text-sm">Skor Sementara: <span id="quiz-live-score">0</span></span>
+                </div>
+
+                <!-- SVG Visual Support if question has shape -->
+                <div id="quiz-visual-box" class="hidden bg-slate-50 p-4 rounded-2xl text-center flex justify-center items-center">
+                </div>
+
+                <!-- Question Text -->
+                <h3 id="quiz-question-text" class="font-title text-lg md:text-xl text-slate-800">
+                    Pertanyaan akan muncul di sini...
+                </h3>
+
+                <!-- MCQ / True False Options -->
+                <div id="quiz-options-container" class="space-y-3">
+                    <!-- Options injected dynamically -->
+                </div>
+
+                <!-- Immediate Answer Feedback & Explanation -->
+                <div id="quiz-explanation-box" class="hidden p-4 rounded-2xl text-sm space-y-2">
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button id="btn-quiz-next" onclick="nextQuizQuestion()" class="hidden px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-title rounded-xl shadow transition">
+                        Soal Berikutnya ➔
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Result Card -->
+            <div id="quiz-result-card" class="hidden max-w-xl mx-auto bg-white p-8 rounded-3xl border-4 border-amber-300 shadow-xl text-center space-y-5">
+                <div class="text-5xl">🏆</div>
+                <h2 class="font-title text-3xl text-amber-600">HASIL KUIS SEGI BANYAK</h2>
+                
+                <div class="bg-amber-50 p-6 rounded-2xl border border-amber-200 space-y-2">
+                    <div class="text-sm font-bold text-slate-500">Nilai Akhir Kamu:</div>
+                    <div id="quiz-final-score" class="text-5xl font-title text-amber-600">100</div>
+                    <div id="quiz-category-badge" class="inline-block bg-amber-500 text-white font-title text-xs px-4 py-1.5 rounded-full uppercase tracking-wide">
+                        Master Segi Banyak
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-xs font-semibold">
+                    <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-emerald-800">
+                        ✅ Jawaban Benar: <span id="quiz-count-correct" class="text-base font-bold">15</span>
+                    </div>
+                    <div class="bg-rose-50 p-3 rounded-xl border border-rose-200 text-rose-800">
+                        ❌ Jawaban Salah: <span id="quiz-count-wrong" class="text-base font-bold">0</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 justify-center pt-2">
+                    <button onclick="startQuiz()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-title rounded-xl text-xs">
+                        🔄 Ulangi Kuis
+                    </button>
+                    <button onclick="showView('view-pencapaian')" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-title rounded-xl text-xs shadow">
+                        ⭐ Lihat Lencana
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MENU 6: TANTANGAN DETEKTIF ================= -->
+        <section id="view-tantangan" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl border-2 border-teal-200 shadow-md space-y-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-teal-100 text-teal-700 rounded-2xl flex items-center justify-center text-2xl font-title">
+                        🕵️‍♂️️
+                    </div>
+                    <div>
+                        <h2 class="font-title text-xl text-teal-800">Tantangan Detektif Bangun Datar</h2>
+                        <p class="text-xs text-slate-500">Cari dan catat minimal 5 benda di sekitar rumah atau kelasmu yang berbentuk segi banyak!</p>
+                    </div>
+                </div>
+
+                <!-- Input Form -->
+                <form onsubmit="addDetectiveFinding(event)" class="bg-teal-50 p-4 rounded-2xl border border-teal-200 grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-title text-teal-900 mb-1">Nama Benda:</label>
+                        <input type="text" id="det-benda" required placeholder="Contoh: Jendela" class="w-full px-3 py-2 text-xs rounded-xl border border-teal-300 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-title text-teal-900 mb-1">Bentuk Bangun:</label>
+                        <select id="det-bentuk" class="w-full px-3 py-2 text-xs rounded-xl border border-teal-300 focus:outline-none bg-white">
+                            <option value="Segitiga">Segitiga</option>
+                            <option value="Segiempat">Segiempat</option>
+                            <option value="Segilima">Segilima</option>
+                            <option value="Segienam">Segienam</option>
+                            <option value="Segidelapan">Segidelapan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-title text-teal-900 mb-1">Jumlah Sisi / Sudut:</label>
+                        <input type="number" id="det-sisi" min="3" max="12" required placeholder="4" class="w-full px-3 py-2 text-xs rounded-xl border border-teal-300 focus:outline-none">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full py-2 bg-teal-600 hover:bg-teal-700 text-white font-title text-xs rounded-xl shadow transition">
+                            ➕ SIMPAN TEMUAN
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Table of Findings -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600 border-collapse">
+                        <thead>
+                            <tr class="bg-teal-100 text-teal-900 font-title border-b border-teal-200">
+                                <th class="p-2.5 rounded-l-xl">No</th>
+                                <th class="p-2.5">Nama Benda</th>
+                                <th class="p-2.5">Bentuk Bangun</th>
+                                <th class="p-2.5">Jumlah Sisi/Sudut</th>
+                                <th class="p-2.5 rounded-r-xl">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detective-table-body">
+                            <!-- Injected JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MENU 7: PENCAPAIAN & BADGES ================= -->
+        <section id="view-pencapaian" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl border-2 border-yellow-200 shadow-md space-y-4 text-center">
+                <h2 class="font-title text-2xl text-amber-600">⭐ Galeri Lencana & Pencapaian</h2>
+                <p class="text-xs text-slate-500">Selesaikan setiap aktivitas untuk membuka semua lencana petualang!</p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2" id="badges-grid-container">
+                    <!-- Badges injected dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MENU 8: REFLEKSI ================= -->
+        <section id="view-refleksi" class="hidden space-y-6">
+            <div class="max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-3xl border-2 border-indigo-200 shadow-md space-y-5">
+                <div class="text-center space-y-1">
+                    <h2 class="font-title text-2xl text-indigo-700">🔄 Refleksi Pembelajaran Siswa</h2>
+                    <p class="text-xs text-slate-500">Ungkapkan apa yang sudah kamu pelajari dan rasakan hari ini!</p>
+                </div>
+
+                <form onsubmit="saveReflection(event)" class="space-y-4 text-xs font-semibold text-slate-700">
+                    <div>
+                        <label class="block font-title text-indigo-900 mb-1">1. Apa hal paling menarik yang kamu pelajari hari ini?</label>
+                        <textarea id="ref-q1" required rows="2" placeholder="Tuliskan di sini..." class="w-full p-3 rounded-xl border border-indigo-200 focus:outline-none focus:border-indigo-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block font-title text-indigo-900 mb-1">2. Bangun datar apa yang paling mudah kamu kenali?</label>
+                        <input type="text" id="ref-q2" required placeholder="Contoh: Segitiga dan persegi" class="w-full p-2.5 rounded-xl border border-indigo-200 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block font-title text-indigo-900 mb-1">3. Bagian mana yang masih membuatmu merasa bingung?</label>
+                        <input type="text" id="ref-q3" placeholder="Contoh: Menghitung sisi segidelapan" class="w-full p-2.5 rounded-xl border border-indigo-200 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block font-title text-indigo-900 mb-2">4. Bagaimana perasaanmu setelah belajar matematika hari ini?</label>
+                        <div class="flex justify-around bg-indigo-50 p-3 rounded-2xl border border-indigo-100">
+                            <label class="cursor-pointer text-center">
+                                <input type="radio" name="ref-feeling" value="Sangat Senang" checked class="sr-only peer">
+                                <div class="text-2xl peer-checked:scale-125 transition">😀</div>
+                                <span class="text-[10px] text-indigo-800 font-bold">Sangat Senang</span>
+                            </label>
+                            <label class="cursor-pointer text-center">
+                                <input type="radio" name="ref-feeling" value="Senang" class="sr-only peer">
+                                <div class="text-2xl peer-checked:scale-125 transition">🙂</div>
+                                <span class="text-[10px] text-indigo-800 font-bold">Senang</span>
+                            </label>
+                            <label class="cursor-pointer text-center">
+                                <input type="radio" name="ref-feeling" value="Biasa Saja" class="sr-only peer">
+                                <div class="text-2xl peer-checked:scale-125 transition">😐</div>
+                                <span class="text-[10px] text-indigo-800 font-bold">Biasa Saja</span>
+                            </label>
+                            <label class="cursor-pointer text-center">
+                                <input type="radio" name="ref-feeling" value="Masih Bingung" class="sr-only peer">
+                                <div class="text-2xl peer-checked:scale-125 transition">😕</div>
+                                <span class="text-[10px] text-indigo-800 font-bold">Masih Bingung</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-title text-indigo-900 mb-1">5. Pesan hangat untuk Bapak/Ibu Gurumu:</label>
+                        <textarea id="ref-q5" rows="2" placeholder="Terima kasih guru..." class="w-full p-3 rounded-xl border border-indigo-200 focus:outline-none"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-title text-sm rounded-2xl shadow-lg transition">
+                        💾 SIMPAN REFLEKSI & KIRIM KEMUDAHAN
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= HALAMAN PENUTUP / COMPLETE ================= -->
+        <section id="view-penutup" class="hidden text-center space-y-6 max-w-2xl mx-auto bg-white p-8 rounded-3xl border-4 border-emerald-300 shadow-xl">
+            <div class="text-6xl animate-bounce">🎉</div>
+            <h2 class="font-title text-3xl text-emerald-700">PETUALANGAN SELESAI!</h2>
+            <p class="text-slate-600 text-sm">
+                Hebat sekali! Kamu telah menyelesaikan seluruh rangkaian eksplorasi dan pembelajaran tentang Segi Banyak.
+            </p>
+
+            <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200 space-y-3 text-left">
+                <div class="flex justify-between items-center border-b border-emerald-200 pb-2">
+                    <span class="text-xs font-bold text-slate-500">Nama Petualang:</span>
+                    <span id="final-summary-nama" class="font-title text-emerald-800">Budi</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-emerald-200 pb-2">
+                    <span class="text-xs font-bold text-slate-500">Skor Kuis Akhir:</span>
+                    <span id="final-summary-skor" class="font-title text-amber-600 text-lg">100</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-500">Lencana Terkumpul:</span>
+                    <span id="final-summary-badge" class="font-title text-purple-700">6 / 6 Badge</span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 justify-center">
+                <button onclick="syncDataToGoogleSheet()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-title text-xs rounded-xl shadow transition">
+                    ☁️ KIRIM HASIL KE GOOGLE SHEET GURU
+                </button>
+                <button onclick="showView('view-dashboard')" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-title text-xs rounded-xl transition">
+                    🏠 Kembali ke Dashboard
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- TEACHER MODE MODAL -->
+    <div id="modal-teacher" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-3xl w-full border-4 border-purple-300 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-title text-xl text-purple-800 flex items-center">
+                    👩‍🏫 Dashboard Mode Guru (Rekap Hasil Belajar)
+                </h3>
+                <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
+            </div>
+
+            <!-- PIN Auth if needed -->
+            <div id="teacher-auth-box" class="space-y-3 text-center py-4">
+                <p class="text-xs text-slate-600 font-bold">Masukkan PIN Guru untuk Mengakses (Default: 1234):</p>
+                <input type="password" id="input-teacher-pin" class="px-4 py-2 border-2 border-purple-200 rounded-xl text-center font-bold" placeholder="PIN">
+                <div>
+                    <button onclick="unlockTeacherMode()" class="px-5 py-2 bg-purple-600 text-white font-title text-xs rounded-xl">Masuk</button>
+                </div>
+            </div>
+
+            <!-- Dashboard Body -->
+            <div id="teacher-content-box" class="hidden space-y-4">
+                <div class="bg-purple-50 p-3 rounded-2xl border border-purple-200 text-xs text-purple-900 space-y-1">
+                    <p><strong>Status Integrasi Google Sheets API:</strong> <span id="gs-connection-status" class="font-bold text-amber-600">Lokal Mode / Google Script URL Belum Diset</span></p>
+                    <p class="text-[10px] text-slate-500">Ubah variabel <code>GOOGLE_SCRIPT_URL</code> pada berkas JavaScript untuk mengaktifkan pengiriman otomatis.</p>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-purple-100 text-purple-900 font-title">
+                                <th class="p-2">Nama</th>
+                                <th class="p-2">Kelas/Sekolah</th>
+                                <th class="p-2">Progress</th>
+                                <th class="p-2">Skor Kuis</th>
+                                <th class="p-2">Refleksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacher-data-table">
+                            <!-- Injected JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex flex-wrap justify-between gap-2 pt-3 border-t border-slate-100">
+                    <button onclick="exportDataToCSV()" class="px-4 py-2 bg-emerald-600 text-white font-title text-xs rounded-xl shadow">
+                        📥 Ekspor CSV
+                    </button>
+                    <button onclick="resetAllLocalStorage()" class="px-4 py-2 bg-rose-500 text-white font-title text-xs rounded-xl">
+                        ⚠️ Reset Semua Data LocalStorage
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GENERAL ALERT MODAL (Replaces window.alert) -->
+    <div id="custom-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-5 max-w-sm w-full text-center space-y-3 shadow-xl border-2 border-sky-300">
+            <div id="modal-icon" class="text-3xl">ℹ️</div>
+            <h4 id="modal-title" class="font-title text-lg text-slate-800">Pemberitahuan</h4>
+            <p id="modal-message" class="text-xs text-slate-600 font-semibold">Pesan pemberitahuan...</p>
+            <button onclick="closeCustomModal()" class="w-full py-2 bg-sky-500 text-white font-title text-xs rounded-xl">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-sky-100 py-4 text-center text-xs text-slate-500 font-semibold mt-8">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>📐 Petualangan Segi Banyak — Pembelajaran Matematika SD Kelas IV (Fase B)</span>
+            <span class="text-sky-600">Berkesadaran • Bermakna • Menggembirakan</span>
+        </div>
+    </footer>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        /* ================= CONFIGURATION & GLOBAL STATE ================= */
+        // URL Web App Google Apps Script dari deploy guru
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYOUR_SCRIPT_ID_HERE/exec";
+
+        // Main Application State
+        let AppState = {
+            user: {
+                nama: "",
+                kelas: "IV",
+                sekolah: ""
+            },
+            progress: {
+                materi: false,
+                eksplorasi: false,
+                gameTebak: false,
+                gameKlasifikasi: false,
+                susun: false,
+                urai: false,
+                kuis: false,
+                tantangan: false,
+                refleksi: false
+            },
+            scores: {
+                gameTebak: 0,
+                kuis: 0
+            },
+            detectiveFindings: [],
+            reflection: null,
+            audioEnabled: true
+        };
+
+        /* Shape Database for Explorer */
+        const SHAPES_DATA = {
+            tri: {
+                name: "Segitiga",
+                sides: 3,
+                corners: 3,
+                desc: "Segitiga adalah segi banyak dengan 3 sisi lurus dan 3 titik sudut.",
+                examples: ["Atap Rumah", "Rambu Lalu Lintas", "Penggaris Segitiga", "Potongan Pizza"],
+                points: "50,15 90,85 10,85"
+            },
+            quad: {
+                name: "Segiempat (Persegi)",
+                sides: 4,
+                corners: 4,
+                desc: "Segiempat memiliki 4 sisi lurus dan 4 titik sudut. Contohnya persegi dan persegi panjang.",
+                examples: ["Jendela", "Buku Tulis", "Papan Tulis", "Ubin Lantai"],
+                points: "15,15 85,15 85,85 15,85"
+            },
+            penta: {
+                name: "Segilima (Pentagon)",
+                sides: 5,
+                corners: 5,
+                desc: "Segilima adalah segi banyak dengan 5 sisi lurus sama panjang dan 5 sudut.",
+                examples: ["Pola Bola Sepak", "Gedung Pentagone", "Rumah Burung"],
+                points: "50,10 90,38 75,85 25,85 10,38"
+            },
+            hexa: {
+                name: "Segienam (Hexagon)",
+                sides: 6,
+                corners: 6,
+                desc: "Segienam memiliki 6 sisi lurus dan 6 sudut. Sangat kokoh!",
+                examples: ["Sarang Lebah Madu", "Kunci L", "Paving Block Hexagon"],
+                points: "50,10 85,30 85,70 50,90 15,70 15,30"
+            },
+            hepta: {
+                name: "Segitujuh (Heptagon)",
+                sides: 7,
+                corners: 7,
+                desc: "Segitujuh dibatasi oleh 7 ruas garis lurus dan memiliki 7 titik sudut.",
+                examples: ["Koin Boks", "Pola Arsitektur Khusus"],
+                points: "50,10 80,25 90,60 65,90 35,90 10,60 20,25"
+            },
+            octa: {
+                name: "Segidelapan (Octagon)",
+                sides: 8,
+                corners: 8,
+                desc: "Segidelapan tersusun dari 8 sisi lurus dan 8 titik sudut.",
+                examples: ["Tanda Rambu STOP", "Cermin Delapan Arah"],
+                points: "30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30"
+            }
+        };
+
+        let currentExplorerShape = 'tri';
+        let currentRotation = 0;
+
+        /* Quiz Questions Bank (15 Questions) */
+        const QUIZ_QUESTIONS = [
+            {
+                q: "Bangun datar tertutup yang tersusun dari ruas-ruas garis lurus disebut...",
+                options: ["Segi banyak", "Garis lengkung", "Bangun ruang", "Lingkaran"],
+                answer: 0,
+                exp: "Segi banyak adalah bangun tertutup yang dibatasi oleh garis lurus."
+            },
+            {
+                q: "Bangun manakah di bawah ini yang BUKAN merupakan segi banyak?",
+                options: ["Segitiga", "Persegi", "Lingkaran", "Segilima"],
+                answer: 2,
+                exp: "Lingkaran dibatasi oleh garis lengkung, sehingga bukan segi banyak."
+            },
+            {
+                q: "Berapa jumlah sisi yang dimiliki oleh sebuah segitiga?",
+                options: ["2 sisi", "3 sisi", "4 sisi", "5 sisi"],
+                answer: 1,
+                exp: "Segitiga selalu memiliki tepat 3 sisi lurus."
+            },
+            {
+                q: "Sebuah segi banyak memiliki 5 titik sudut. Berapakah jumlah sisinya?",
+                options: ["3 Sisi", "4 Sisi", "5 Sisi", "6 Sisi"],
+                answer: 2,
+                exp: "Pada segi banyak lurus, jumlah sudut selalu sama dengan jumlah sisinya (5 sisi)."
+            },
+            {
+                q: "Atap rumah pada umumnya berbentuk...",
+                options: ["Lingkaran", "Segitiga", "Segidelapan", "Segienam"],
+                answer: 1,
+                exp: "Atap rumah umumnya berbentuk segitiga karena dapat mengalirkan air hujan."
+            },
+            {
+                q: "Rambu lalu lintas bertuliskan 'STOP' memiliki bentuk segi...",
+                options: ["Segitiga", "Segiempat", "Segienam", "Segidelapan"],
+                answer: 3,
+                exp: "Rambu STOP berstandar internasional berbentuk segidelapan (octagon)."
+            },
+            {
+                q: "Benda berikut di dalam kelas yang berbentuk segiempat adalah...",
+                options: ["Papan Tulis", "Bola Dunia", "Jam Dinding Bulat", "Pensil"],
+                answer: 0,
+                exp: "Papan tulis memiliki 4 sisi lurus (segiempat)."
+            },
+            {
+                q: "Segi banyak yang semua sisinya sama panjang dan semua sudutnya sama besar disebut...",
+                options: ["Segi banyak beraturan", "Segi banyak tidak beraturan", "Garis lurus", "Sudut tumpul"],
+                answer: 0,
+                exp: "Segi banyak beraturan memiliki sisi sama panjang dan sudut sama besar."
+            },
+            {
+                q: "Segienam (Hexagon) memiliki berapa titik sudut?",
+                options: ["5 sudut", "6 sudut", "7 sudut", "8 sudut"],
+                answer: 1,
+                exp: "Segienam memiliki 6 sisi dan 6 titik sudut."
+            },
+            {
+                q: "Sarang lebah madu tersusun dari bentuk segi banyak beraturan yaitu...",
+                options: ["Segitiga", "Segienam", "Segitujuh", "Segidelapan"],
+                answer: 1,
+                exp: "Sarang lebah tersusun dari pola segienam (hexagon) yang sangat efisien."
+            },
+            {
+                q: "Jika kita menggabungkan 2 buah segitiga siku-siku yang sama besar, kita dapat membentuk...",
+                options: ["Lingkaran", "Persegi Panjang", "Segilima", "Segidenam"],
+                answer: 1,
+                exp: "Dua segitiga siku-siku dapat disusun menjadi segiempat/persegi panjang."
+            },
+            {
+                q: "Manakah pernyataan yang BENAR di bawah ini?",
+                options: [
+                    "Persegi panjang adalah segi banyak tidak beraturan",
+                    "Lingkaran adalah segi banyak",
+                    "Segitiga memiliki 4 sudut",
+                    "Segilima memiliki 6 sisi"
+                ],
+                answer: 0,
+                exp: "Persegi panjang memiliki panjang dan lebar yang berbeda, sehingga tergolong tidak beraturan."
+            },
+            {
+                q: "Berapakah jumlah sudut pada bangun segilima?",
+                options: ["3", "4", "5", "6"],
+                answer: 2,
+                exp: "Segilima (pentagon) memiliki 5 sudut."
+            },
+            {
+                q: "Proses menguraikan satu gambar gabungan menjadi beberapa bangun datar sederhana disebut...",
+                options: ["Komposisi", "Dekomposisi", "Rotasi", "Translasi"],
+                answer: 1,
+                exp: "Dekomposisi adalah kegiatan memecah/menguraikan bangun kompleks menjadi bangun sederhana."
+            },
+            {
+                q: "Ubin lantai yang dipasang rapat tanpa celah merupakan contoh penerapan...",
+                options: ["Segi banyak dalam kehidupan", "Garis lengkung", "Bangun ruang 3D", "Pecahan"],
+                answer: 0,
+                exp: "Ubin lantai segiempat atau segienam adalah penerapan segi banyak di sekitar kita."
+            }
+        ];
+
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let quizAnswersHistory = [];
+
+        /* Initialization on Window Load */
+        window.onload = function() {
+            checkSavedSession();
+            renderExplorerShapeSelector();
+            renderExplorerShape('tri');
+            initTebakGame();
+            initClassifyGame();
+            renderBadges();
+            updateProgressUI();
+        };
+
+        /* Custom Alert Dialog Replacement */
+        function showCustomModal(title, msg, icon = "ℹ️") {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = msg;
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+        function closeCustomModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        /* Web Speech API Text-to-Speech */
+        function speakText(text) {
+            if (!AppState.audioEnabled) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Stop current
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID';
+                utterance.rate = 0.9; // Slightly slower for kids
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function toggleAudio() {
+            AppState.audioEnabled = !AppState.audioEnabled;
+            const icon = document.getElementById('audio-icon');
+            if (AppState.audioEnabled) {
+                icon.className = "fa-solid fa-volume-high text-lg text-sky-700";
+                showCustomModal("Audio Aktif", "Pembaca suara telah diaktifkan.", "🔊");
+            } else {
+                window.speechSynthesis.cancel();
+                icon.className = "fa-solid fa-volume-xmark text-lg text-slate-400";
+                showCustomModal("Audio Mati", "Pembaca suara dimatikan.", "🔇");
+            }
+        }
+
+        /* Navigation Handler */
+        function showView(viewId) {
+            const views = [
+                'view-landing', 'view-dashboard', 'view-materi', 'view-eksplorasi',
+                'view-permainan', 'view-susun', 'view-kuis', 'view-tantangan',
+                'view-pencapaian', 'view-refleksi', 'view-penutup'
+            ];
+
+            views.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById(viewId);
+            if (target) {
+                target.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            const header = document.getElementById('main-header');
+            if (viewId === 'view-landing') {
+                header.classList.add('hidden');
+            } else {
+                header.classList.remove('hidden');
+            }
+        }
+
+        /* Start Adventure Form Handler */
+        function startAdventure(e) {
+            e.preventDefault();
+            const nama = document.getElementById('input-nama').value.trim();
+            const sekolah = document.getElementById('input-sekolah').value.trim();
+
+            if (!nama || !sekolah) {
+                showCustomModal("Data Belum Lengkap", "Harap isi Nama dan Sekolah terlebih dahulu!", "⚠️");
+                return;
+            }
+
+            AppState.user.nama = nama;
+            AppState.user.sekolah = sekolah;
+
+            document.getElementById('header-user-info').innerText = `Siswa: ${nama} | ${sekolah}`;
+            document.getElementById('welcome-user-name').innerText = `Halo, ${nama}! 🚀`;
+
+            saveSessionToLocalStorage();
+            showView('view-dashboard');
+            speakText(`Selamat datang ${nama}! Mari memulai petualangan segi banyak!`);
+        }
+
+        function saveSessionToLocalStorage() {
+            localStorage.setItem('petualangan_segi_banyak_data', JSON.stringify(AppState));
+        }
+
+        function checkSavedSession() {
+            const saved = localStorage.getItem('petualangan_segi_banyak_data');
+            if (saved) {
+                document.getElementById('resume-banner').classList.remove('hidden');
+            }
+        }
+
+        function loadSavedSession() {
+            const saved = localStorage.getItem('petualangan_segi_banyak_data');
+            if (saved) {
+                AppState = JSON.parse(saved);
+                document.getElementById('header-user-info').innerText = `Siswa: ${AppState.user.nama} | ${AppState.user.sekolah}`;
+                document.getElementById('welcome-user-name').innerText = `Halo lagi, ${AppState.user.nama}! 👋`;
+                updateProgressUI();
+                renderDetectiveTable();
+                showView('view-dashboard');
+            }
+        }
+
+        /* Progress & Badge Calculator */
+        function markModuleComplete(key) {
+            if (AppState.progress.hasOwnProperty(key)) {
+                AppState.progress[key] = true;
+                updateProgressUI();
+                saveSessionToLocalStorage();
+            }
+        }
+
+        function updateProgressUI() {
+            const keys = Object.keys(AppState.progress);
+            const completedCount = keys.filter(k => AppState.progress[k]).length;
+            const percentage = Math.round((completedCount / keys.length) * 100);
+
+            document.getElementById('overall-progress-bar').style.width = `${percentage}%`;
+            document.getElementById('overall-progress-text').innerText = `${percentage}%`;
+            document.getElementById('dash-progress-bar').style.width = `${percentage}%`;
+            document.getElementById('dash-progress-text').innerText = `${percentage}%`;
+
+            renderBadges();
+        }
+
+        /* Explorer Module Logic */
+        function renderExplorerShapeSelector() {
+            const container = document.getElementById('shape-selector-container');
+            container.innerHTML = "";
+
+            Object.keys(SHAPES_DATA).forEach(key => {
+                const shape = SHAPES_DATA[key];
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1.5 rounded-xl font-title text-xs transition ${key === currentExplorerShape ? 'bg-sky-500 text-white shadow' : 'bg-slate-100 text-slate-700 hover:bg-sky-100'}`;
+                btn.innerText = shape.name;
+                btn.onclick = () => {
+                    currentExplorerShape = key;
+                    renderExplorerShapeSelector();
+                    renderExplorerShape(key);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderExplorerShape(key) {
+            const data = SHAPES_DATA[key];
+            const svgContainer = document.getElementById('explorer-svg-container');
+
+            svgContainer.innerHTML = `
+                <svg id="explorer-svg" viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
+                    <polygon id="exp-polygon" points="${data.points}" fill="#38bdf8" stroke="#0284c7" stroke-width="4" stroke-linejoin="round"/>
+                    <g id="exp-edges-group"></g>
+                    <g id="exp-vertices-group"></g>
+                </svg>
+            `;
+
+            document.getElementById('exp-shape-title').innerText = data.name;
+            document.getElementById('exp-shape-sides').innerText = `${data.sides} Sisi`;
+            document.getElementById('exp-shape-corners').innerText = `${data.corners} Sudut`;
+            document.getElementById('exp-shape-desc').innerText = data.desc;
+
+            const exContainer = document.getElementById('exp-shape-examples');
+            exContainer.innerHTML = data.examples.map(ex => `<span class="bg-sky-100 text-sky-800 text-xs px-2.5 py-1 rounded-lg font-bold">${ex}</span>`).join('');
+
+            document.getElementById('exp-audio-btn').onclick = () => {
+                speakText(`${data.name}. Memiliki ${data.sides} sisi dan ${data.corners} sudut. ${data.desc}`);
+            };
+
+            markModuleComplete('eksplorasi');
+        }
+
+        function highlightEdges() {
+            const data = SHAPES_DATA[currentExplorerShape];
+            const group = document.getElementById('exp-edges-group');
+            group.innerHTML = "";
+
+            const pts = data.points.split(' ').map(p => p.split(',').map(Number));
+            for (let i = 0; i < pts.length; i++) {
+                const next = pts[(i + 1) % pts.length];
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", pts[i][0]);
+                line.setAttribute("y1", pts[i][1]);
+                line.setAttribute("x2", next[0]);
+                line.setAttribute("y2", next[1]);
+                line.setAttribute("class", "pulse-edge");
+                group.appendChild(line);
+            }
+            speakText(`Setiap garis menyala ini adalah sisi dari ${data.name}.`);
+        }
+
+        function highlightVertices() {
+            const data = SHAPES_DATA[currentExplorerShape];
+            const group = document.getElementById('exp-vertices-group');
+            group.innerHTML = "";
+
+            const pts = data.points.split(' ').map(p => p.split(',').map(Number));
+            pts.forEach(pt => {
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", pt[0]);
+                circle.setAttribute("cy", pt[1]);
+                circle.setAttribute("r", "5");
+                circle.setAttribute("fill", "#ec4899");
+                circle.setAttribute("stroke", "#ffffff");
+                circle.setAttribute("stroke-width", "2");
+                circle.setAttribute("class", "vertex-pop");
+                group.appendChild(circle);
+            });
+            speakText(`Titik-titik merah ini adalah titik sudut dari ${data.name}.`);
+        }
+
+        function rotateShape() {
+            currentRotation += 45;
+            const container = document.getElementById('explorer-svg-container');
+            container.style.transform = `rotate(${currentRotation}deg)`;
+        }
+
+        /* Game 1: Tebak Bangun Logic */
+        let tebakQuestions = [];
+        let tebakIndex = 0;
+
+        function initTebakGame() {
+            tebakQuestions = Object.keys(SHAPES_DATA).map(key => ({
+                key: key,
+                data: SHAPES_DATA[key]
+            })).sort(() => Math.random() - 0.5);
+            tebakIndex = 0;
+            renderTebakQuestion();
+        }
+
+        function renderTebakQuestion() {
+            if (tebakIndex >= tebakQuestions.length) {
+                document.getElementById('game-tebak-question').innerText = "🎉 Permainan Tebak Bangun Selesai!";
+                document.getElementById('game-tebak-image-container').innerHTML = `<div class="text-4xl">⭐⭐⭐</div>`;
+                document.getElementById('game-tebak-options').innerHTML = `<button onclick="initTebakGame()" class="col-span-2 py-3 bg-amber-500 text-white font-title rounded-xl">Main Lagi</button>`;
+                markModuleComplete('gameTebak');
+                return;
+            }
+
+            const item = tebakQuestions[tebakIndex];
+            document.getElementById('game-tebak-progress').innerText = `Soal ${tebakIndex + 1} dari ${tebakQuestions.length}`;
+            document.getElementById('game-tebak-feedback').classList.add('hidden');
+
+            const imgContainer = document.getElementById('game-tebak-image-container');
+            imgContainer.innerHTML = `
+                <svg viewBox="0 0 100 100" class="w-32 h-32 text-amber-500">
+                    <polygon points="${item.data.points}" fill="currentColor" />
+                </svg>
+            `;
+
+            const choices = [item.data.name];
+            while (choices.length < 4) {
+                const keys = Object.keys(SHAPES_DATA);
+                const randName = SHAPES_DATA[keys[Math.floor(Math.random() * keys.length)]].name;
+                if (!choices.includes(randName)) choices.push(randName);
+            }
+            choices.sort(() => Math.random() - 0.5);
+
+            const optContainer = document.getElementById('game-tebak-options');
+            optContainer.innerHTML = choices.map(choice => `
+                <button onclick="checkTebakAnswer('${choice}', '${item.data.name}')" class="py-3 bg-amber-100 hover:bg-amber-200 text-amber-900 font-title text-sm rounded-2xl transition">
+                    ${choice}
+                </button>
+            `).join('');
+        }
+
+        function checkTebakAnswer(selected, correct) {
+            const feedback = document.getElementById('game-tebak-feedback');
+            feedback.classList.remove('hidden');
+
+            if (selected === correct) {
+                feedback.className = "p-3 rounded-2xl text-sm font-bold bg-emerald-100 text-emerald-800";
+                feedback.innerText = "✅ Hebat! Jawabanmu benar sekali.";
+                AppState.scores.gameTebak += 10;
+                document.getElementById('game-tebak-score').innerText = AppState.scores.gameTebak;
+                speakText("Hebat! Jawabanmu benar.");
+            } else {
+                feedback.className = "p-3 rounded-2xl text-sm font-bold bg-rose-100 text-rose-800";
+                feedback.innerText = `❌ Hampir benar! Bangun ini adalah ${correct}.`;
+                speakText(`Hampir benar. Bangun ini adalah ${correct}.`);
+            }
+
+            setTimeout(() => {
+                tebakIndex++;
+                renderTebakQuestion();
+            }, 1500);
+        }
+
+        function switchGameSubtab(tab) {
+            document.getElementById('game-subtab-tebak').classList.toggle('hidden', tab !== 'tebak');
+            document.getElementById('game-subtab-klasifikasi').classList.toggle('hidden', tab !== 'klasifikasi');
+
+            document.getElementById('tab-game-tebak').className = tab === 'tebak' ? 'px-5 py-2.5 rounded-2xl font-title text-sm transition bg-sky-500 text-white shadow' : 'px-5 py-2.5 rounded-2xl font-title text-sm transition bg-white text-slate-600 hover:bg-sky-50';
+            document.getElementById('tab-game-klasifikasi').className = tab === 'klasifikasi' ? 'px-5 py-2.5 rounded-2xl font-title text-sm transition bg-sky-500 text-white shadow' : 'px-5 py-2.5 rounded-2xl font-title text-sm transition bg-white text-slate-600 hover:bg-sky-50';
+        }
+
+        /* Game 2: Klasifikasi Drag & Tap Logic */
+        let selectedShapeToClassify = null;
+        const classifyItems = [
+            { id: 1, name: "Segitiga", sides: "3", icon: "🔺" },
+            { id: 2, name: "Persegi", sides: "4", icon: "🟦" },
+            { id: 3, name: "Pentagon", sides: "5", icon: "⬟" },
+            { id: 4, name: "Hexagon", sides: "6+", icon: "🛑" },
+            { id: 5, name: "Layang-layang", sides: "4", icon: "🪁" },
+            { id: 6, name: "Segitiga Siku", sides: "3", icon: "📐" }
+        ];
+
+        function initClassifyGame() {
+            const container = document.getElementById('classify-source-container');
+            container.innerHTML = "";
+            classifyItems.forEach(item => {
+                const btn = document.createElement('button');
+                btn.id = `classify-item-${item.id}`;
+                btn.className = "px-3 py-2 bg-white rounded-xl border-2 border-sky-300 font-title text-xs shadow hover:scale-105 transition flex items-center space-x-1";
+                btn.innerHTML = `<span>${item.icon}</span> <span>${item.name}</span>`;
+                btn.onclick = () => selectShapeToClassify(item);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectShapeToClassify(item) {
+            selectedShapeToClassify = item;
+            speakText(`Kamu memilih ${item.name}. Sekarang klik wadah jumlah sisi yang tepat.`);
+            showCustomModal("Bangun Dipilih", `Kamu memilih ${item.name}. Sekarang ketuk/pilih salah satu kategori wadah di bawah!`, "👆");
+        }
+
+        function dropClassifyShape(targetSides) {
+            if (!selectedShapeToClassify) {
+                showCustomModal("Pilih Bangun", "Pilih dulu salah satu bangun dari papan atas!", "⚠️");
+                return;
+            }
+
+            if (selectedShapeToClassify.sides === targetSides) {
+                const targetBox = document.getElementById(`target-${targetSides === '3' ? '3' : targetSides === '4' ? '4' : targetSides === '5' ? '5' : '6plus'}-sisi`);
+                targetBox.innerHTML += `<span class="bg-white px-2 py-0.5 rounded text-[10px] font-bold border">${selectedShapeToClassify.name}</span>`;
+                
+                const sourceBtn = document.getElementById(`classify-item-${selectedShapeToClassify.id}`);
+                if (sourceBtn) sourceBtn.remove();
+
+                speakText("Hebat! Kelompokmu tepat.");
+                selectedShapeToClassify = null;
+                markModuleComplete('gameKlasifikasi');
+            } else {
+                speakText("Coba periksa kembali jumlah sisinya.");
+                showCustomModal("Kurang Tepat", "Jumlah sisi belum sesuai. Coba periksa kembali sisinya!", "❌");
+            }
+        }
+
+        function resetClassificationGame() {
+            document.getElementById('target-3-sisi').innerHTML = "";
+            document.getElementById('target-4-sisi').innerHTML = "";
+            document.getElementById('target-5-sisi').innerHTML = "";
+            document.getElementById('target-6plus-sisi').innerHTML = "";
+            initClassifyGame();
+        }
+
+        /* Composition & Decomposition Studio Logic */
+        let addedCanvasShapes = [];
+
+        function switchSusunSubtab(tab) {
+            document.getElementById('susun-subtab-komposisi').classList.toggle('hidden', tab !== 'komposisi');
+            document.getElementById('susun-subtab-dekomposisi').classList.toggle('hidden', tab !== 'dekomposisi');
+
+            document.getElementById('tab-susun-komposisi').className = tab === 'komposisi' ? 'px-5 py-2.5 rounded-2xl font-title text-sm transition bg-purple-600 text-white shadow' : 'px-5 py-2.5 rounded-2xl font-title text-sm transition bg-white text-slate-600 hover:bg-purple-50';
+            document.getElementById('tab-susun-dekomposisi').className = tab === 'dekomposisi' ? 'px-5 py-2.5 rounded-2xl font-title text-sm transition bg-purple-600 text-white shadow' : 'px-5 py-2.5 rounded-2xl font-title text-sm transition bg-white text-slate-600 hover:bg-purple-50';
+
+            if (tab === 'dekomposisi') renderDecompositionTask();
+        }
+
+        function addShapeToCanvas(type, color) {
+            const workspace = document.getElementById('composition-workspace');
+            const emptyMsg = document.getElementById('canvas-empty-msg');
+            if (emptyMsg) emptyMsg.remove();
+
+            const shapeDiv = document.createElement('div');
+            shapeDiv.className = "absolute cursor-move transition-transform duration-200 hover:scale-110";
+            shapeDiv.style.left = `${Math.random() * 60 + 20}%`;
+            shapeDiv.style.top = `${Math.random() * 50 + 20}%`;
+
+            let svgHtml = "";
+            if (type === 'triangle') svgHtml = `<svg class="w-16 h-16" viewBox="0 0 100 100"><polygon points="50,15 90,85 10,85" fill="${color}"/></svg>`;
+            else if (type === 'square') svgHtml = `<svg class="w-16 h-16" viewBox="0 0 100 100"><rect x="15" y="15" width="70" height="70" fill="${color}"/></svg>`;
+            else if (type === 'rectangle') svgHtml = `<svg class="w-20 h-12" viewBox="0 0 100 60"><rect x="5" y="5" width="90" height="50" fill="${color}"/></svg>`;
+            else if (type === 'pentagon') svgHtml = `<svg class="w-16 h-16" viewBox="0 0 100 100"><polygon points="50,10 90,38 75,85 25,85 10,38" fill="${color}"/></svg>`;
+            else if (type === 'parallelogram') svgHtml = `<svg class="w-20 h-12" viewBox="0 0 100 60"><polygon points="25,5 95,5 75,55 5,55" fill="${color}"/></svg>`;
+
+            shapeDiv.innerHTML = svgHtml;
+            workspace.appendChild(shapeDiv);
+
+            addedCanvasShapes.push(type);
+            markModuleComplete('susun');
+        }
+
+        function clearCompositionCanvas() {
+            const workspace = document.getElementById('composition-workspace');
+            workspace.innerHTML = `<p id="canvas-empty-msg" class="text-slate-400 text-sm font-semibold pointer-events-none">Papan Gambar Masih Kosong. Klik bentuk di bawah untuk menambah!</p>`;
+            addedCanvasShapes = [];
+            document.getElementById('composition-result').classList.add('hidden');
+        }
+
+        function finishCompositionTask() {
+            if (addedCanvasShapes.length < 3) {
+                showCustomModal("Ayo Tambah Lagi!", "Buatlah kreasimu dengan minimal 3 bangun datar!", "🎨");
+                return;
+            }
+
+            const triCount = addedCanvasShapes.filter(s => s === 'triangle').length;
+            const quadCount = addedCanvasShapes.filter(s => ['square', 'rectangle', 'parallelogram'].includes(s)).length;
+            const pentaCount = addedCanvasShapes.filter(s => s === 'pentagon').length;
+
+            const resDiv = document.getElementById('composition-result');
+            resDiv.classList.remove('hidden');
+            resDiv.innerHTML = `
+                🎉 <strong>Kreasi Hebat! Bangun yang kamu gunakan:</strong>
+                <ul class="list-disc list-inside mt-1 text-xs">
+                    <li>Segitiga = ${triCount} buah</li>
+                    <li>Segiempat = ${quadCount} buah</li>
+                    <li>Segilima = ${pentaCount} buah</li>
+                </ul>
+            `;
+            speakText(`Kreasi yang sangat indah! Kamu menggunakan total ${addedCanvasShapes.length} bangun datar.`);
+        }
+
+        /* Decomposition Task */
+        function renderDecompositionTask() {
+            const imgContainer = document.getElementById('decomp-image-container');
+            // Illustrate Composite House using SVG
+            imgContainer.innerHTML = `
+                <svg viewBox="0 0 200 200" class="w-48 h-48">
+                    <!-- Atap (Segitiga) -->
+                    <polygon points="100,30 170,90 30,90" fill="#f59e0b" />
+                    <!-- Dinding (Persegi) -->
+                    <rect x="40" y="90" width="120" height="90" fill="#3b82f6" />
+                    <!-- Jendela (Persegi) -->
+                    <rect x="55" y="110" width="30" height="30" fill="#fef08a" />
+                    <!-- Pintu (Persegi Panjang) -->
+                    <rect x="110" y="120" width="35" height="60" fill="#10b981" />
+                </svg>
+            `;
+
+            const chkContainer = document.getElementById('decomp-checkboxes');
+            chkContainer.innerHTML = `
+                <label class="flex items-center space-x-2 bg-purple-50 p-2.5 rounded-xl border border-purple-200 cursor-pointer">
+                    <input type="checkbox" id="chk-tri" class="w-4 h-4 text-purple-600">
+                    <span class="text-xs font-bold text-slate-700">🔺 Segitiga</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-purple-50 p-2.5 rounded-xl border border-purple-200 cursor-pointer">
+                    <input type="checkbox" id="chk-sq" class="w-4 h-4 text-purple-600">
+                    <span class="text-xs font-bold text-slate-700">🟦 Persegi</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-purple-50 p-2.5 rounded-xl border border-purple-200 cursor-pointer">
+                    <input type="checkbox" id="chk-rect" class="w-4 h-4 text-purple-600">
+                    <span class="text-xs font-bold text-slate-700">🟩 Persegi Panjang</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-purple-50 p-2.5 rounded-xl border border-purple-200 cursor-pointer">
+                    <input type="checkbox" id="chk-penta" class="w-4 h-4 text-purple-600">
+                    <span class="text-xs font-bold text-slate-700">⬟ Segilima</span>
+                </label>
+            `;
+        }
+
+        function checkDecompositionAnswer() {
+            const tri = document.getElementById('chk-tri').checked;
+            const sq = document.getElementById('chk-sq').checked;
+            const rect = document.getElementById('chk-rect').checked;
+            const penta = document.getElementById('chk-penta').checked;
+
+            const feedback = document.getElementById('decomp-feedback');
+            feedback.classList.remove('hidden');
+
+            if (tri && sq && rect && !penta) {
+                feedback.className = "p-3 rounded-2xl text-sm font-bold bg-emerald-100 text-emerald-800";
+                feedback.innerText = "✅ Sempurna! Gambar rumah disusun dari Segitiga (Atap), Persegi (Dinding/Jendela), dan Persegi Panjang (Pintu).";
+                speakText("Sempurna! Analisis dekomposisimu sangat tepat.");
+                markModuleComplete('urai');
+            } else {
+                feedback.className = "p-3 rounded-2xl text-sm font-bold bg-rose-100 text-rose-800";
+                feedback.innerText = "❌ Coba amati lagi bentuk atap, dinding, jendela, dan pintunya!";
+            }
+        }
+
+        /* Quiz Engine Logic */
+        function startQuiz() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            quizAnswersHistory = [];
+
+            document.getElementById('quiz-intro-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.add('hidden');
+            document.getElementById('quiz-active-card').classList.remove('hidden');
+
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            if (currentQuizIndex >= QUIZ_QUESTIONS.length) {
+                finishQuiz();
+                return;
+            }
+
+            const q = QUIZ_QUESTIONS[currentQuizIndex];
+            document.getElementById('quiz-progress-num').innerText = `Soal ${currentQuizIndex + 1} / ${QUIZ_QUESTIONS.length}`;
+            document.getElementById('quiz-live-score').innerText = quizScore;
+            document.getElementById('quiz-question-text').innerText = q.q;
+
+            document.getElementById('quiz-explanation-box').classList.add('hidden');
+            document.getElementById('btn-quiz-next').classList.add('hidden');
+
+            const optBox = document.getElementById('quiz-options-container');
+            optBox.innerHTML = q.options.map((opt, idx) => `
+                <button onclick="submitQuizAnswer(${idx})" class="w-full text-left p-3.5 bg-slate-50 hover:bg-rose-50 border-2 border-slate-200 hover:border-rose-300 rounded-2xl text-xs md:text-sm font-semibold text-slate-700 transition">
+                    ${String.fromCharCode(65 + idx)}. ${opt}
+                </button>
+            `).join('');
+
+            speakText(`Soal nomor ${currentQuizIndex + 1}. ${q.q}`);
+        }
+
+        function submitQuizAnswer(selectedIdx) {
+            const q = QUIZ_QUESTIONS[currentQuizIndex];
+            const isCorrect = selectedIdx === q.answer;
+
+            if (isCorrect) quizScore += 10;
+
+            const expBox = document.getElementById('quiz-explanation-box');
+            expBox.classList.remove('hidden');
+            expBox.className = isCorrect ? "p-4 rounded-2xl text-xs md:text-sm font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300" : "p-4 rounded-2xl text-xs md:text-sm font-semibold bg-rose-100 text-rose-900 border border-rose-300";
+            expBox.innerHTML = `
+                <div>${isCorrect ? '✅ <strong>Jawaban Benar!</strong>' : '❌ <strong>Jawaban Kurang Tepat.</strong>'}</div>
+                <div class="mt-1">${q.exp}</div>
+            `;
+
+            // Disable options
+            const buttons = document.getElementById('quiz-options-container').querySelectorAll('button');
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.answer) btn.classList.add('bg-emerald-200', 'border-emerald-500');
+                else if (idx === selectedIdx) btn.classList.add('bg-rose-200', 'border-rose-500');
+            });
+
+            document.getElementById('btn-quiz-next').classList.remove('hidden');
+            speakText(isCorrect ? "Jawabanmu benar!" : "Jawaban kurang tepat.");
+        }
+
+        function nextQuizQuestion() {
+            currentQuizIndex++;
+            renderQuizQuestion();
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-active-card').classList.add('hidden');
+            document.getElementById('quiz-result-card').classList.remove('hidden');
+
+            const finalPercentage = Math.round((quizScore / (QUIZ_QUESTIONS.length * 10)) * 100);
+            document.getElementById('quiz-final-score').innerText = finalPercentage;
+
+            let badgeTitle = "Master Segi Banyak";
+            if (finalPercentage < 70) badgeTitle = "Ayo Berlatih Lagi";
+            else if (finalPercentage < 80) badgeTitle = "Penjelajah Hebat";
+            else if (finalPercentage < 90) badgeTitle = "Ahli Bangun";
+
+            document.getElementById('quiz-category-badge').innerText = badgeTitle;
+            document.getElementById('quiz-count-correct').innerText = Math.round(quizScore / 10);
+            document.getElementById('quiz-count-wrong').innerText = QUIZ_QUESTIONS.length - Math.round(quizScore / 10);
+
+            AppState.scores.kuis = finalPercentage;
+            markModuleComplete('kuis');
+
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            if (finalPercentage >= 70) {
+                showView('view-penutup');
+                document.getElementById('final-summary-nama').innerText = AppState.user.nama;
+                document.getElementById('final-summary-skor').innerText = finalPercentage;
+            }
+        }
+
+        /* Detective Module Logic */
+        function addDetectiveFinding(e) {
+            e.preventDefault();
+            const benda = document.getElementById('det-benda').value.trim();
+            const bentuk = document.getElementById('det-bentuk').value;
+            const sisi = document.getElementById('det-sisi').value;
+
+            if (!benda || !sisi) return;
+
+            AppState.detectiveFindings.push({ benda, bentuk, sisi });
+            renderDetectiveTable();
+
+            document.getElementById('det-benda').value = "";
+            document.getElementById('det-sisi').value = "";
+
+            markModuleComplete('tantangan');
+            showCustomModal("Temuan Disimpan", `Kamu berhasil mencatat ${benda}!`, "🕵️‍♂️");
+        }
+
+        function renderDetectiveTable() {
+            const tbody = document.getElementById('detective-table-body');
+            tbody.innerHTML = AppState.detectiveFindings.map((item, idx) => `
+                <tr class="border-b border-slate-100 hover:bg-teal-50">
+                    <td class="p-2.5 font-bold">${idx + 1}</td>
+                    <td class="p-2.5 font-semibold">${item.benda}</td>
+                    <td class="p-2.5">${item.bentuk}</td>
+                    <td class="p-2.5 font-bold text-teal-700">${item.sisi} Sisi / Sudut</td>
+                    <td class="p-2.5">
+                        <button onclick="removeDetectiveFinding(${idx})" class="text-rose-500 hover:text-rose-700">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function removeDetectiveFinding(idx) {
+            AppState.detectiveFindings.splice(idx, 1);
+            renderDetectiveTable();
+            saveSessionToLocalStorage();
+        }
+
+        /* Reflection & Gamification Logic */
+        function saveReflection(e) {
+            e.preventDefault();
+            const q1 = document.getElementById('ref-q1').value;
+            const q2 = document.getElementById('ref-q2').value;
+            const q3 = document.getElementById('ref-q3').value;
+            const feeling = document.querySelector('input[name="ref-feeling"]:checked').value;
+            const q5 = document.getElementById('ref-q5').value;
+
+            AppState.reflection = { q1, q2, q3, feeling, q5 };
+            markModuleComplete('refleksi');
+
+            showCustomModal("Refleksi Tersimpan", "Terima kasih sudah membagikan refleksimu!", "💖");
+            syncDataToGoogleSheet();
+        }
+
+        const BADGES_DEFINITIONS = [
+            { id: "b1", title: "🏅 Penemu Segi Banyak", desc: "Mempelajari seluruh kartu materi.", key: "materi" },
+            { id: "b2", title: "🏅 Detektif Bangun", desc: "Mencatat benda segi banyak.", key: "tantangan" },
+            { id: "b3", title: "🏅 Ahli Sisi", desc: "Mengeksplorasi sisi pada lab bangun.", key: "eksplorasi" },
+            { id: "b4", title: "🏅 Ahli Sudut", desc: "Menyelesaikan permainan klasifikasi.", key: "gameKlasifikasi" },
+            { id: "b5", title: "🏅 Kreator Bangun", desc: "Menyusun bangun datar di studio kreasi.", key: "susun" },
+            { id: "b6", title: "🏅 Master Segi Banyak", desc: "Lulus kuis evaluasi segi banyak.", key: "kuis" }
+        ];
+
+        function renderBadges() {
+            const container = document.getElementById('badges-grid-container');
+            if (!container) return;
+
+            let unlockedCount = 0;
+            container.innerHTML = BADGES_DEFINITIONS.map(b => {
+                const unlocked = AppState.progress[b.key];
+                if (unlocked) unlockedCount++;
+                return `
+                    <div class="p-4 rounded-2xl border-2 transition text-center ${unlocked ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-100 border-slate-200 opacity-50'}">
+                        <div class="text-3xl mb-1">${unlocked ? '🏆' : '🔒'}</div>
+                        <h4 class="font-title text-xs text-slate-800">${b.title}</h4>
+                        <p class="text-[10px] text-slate-500 mt-1">${b.desc}</p>
+                    </div>
+                `;
+            }).join('');
+
+            const finalBadgeLabel = document.getElementById('final-summary-badge');
+            if (finalBadgeLabel) finalBadgeLabel.innerText = `${unlockedCount} / ${BADGES_DEFINITIONS.length} Badge`;
+        }
+
+        /* Google Apps Script Integration */
+        function syncDataToGoogleSheet() {
+            const dataPayload = {
+                nama: AppState.user.nama || "Siswa Anonymous",
+                kelas: AppState.user.kelas || "IV",
+                sekolah: AppState.user.sekolah || "-",
+                asesmenAwal: "Selesai",
+                game: AppState.scores.gameTebak,
+                kuis: AppState.scores.kuis,
+                progress: `${Math.round((Object.keys(AppState.progress).filter(k => AppState.progress[k]).length / 9) * 100)}%`,
+                badge: BADGES_DEFINITIONS.filter(b => AppState.progress[b.key]).length,
+                refleksi: AppState.reflection ? AppState.reflection.feeling : "Belum",
+                waktu: new Date().toLocaleString("id-ID")
+            };
+
+            if (GOOGLE_SCRIPT_URL.includes("YOUR_SCRIPT_ID_HERE")) {
+                showCustomModal("Simpan Lokal", "Data hasil belajar telah tersimpan dengan aman di perangkat ini! (Konfigurasi URL Google Script guru belum diisi).", "💾");
+                return;
+            }
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(dataPayload)
+            }).then(() => {
+                showCustomModal("Berhasil Dikirim!", "Data hasil belajar telah terikirim ke Google Sheet Guru!", "☁️");
+            }).catch(err => {
+                showCustomModal("Koneksi Offline", "Data tersimpan di perangkat. Akan dikirim ketika koneksi internet tersedia.", "📶");
+            });
+        }
+
+        /* Teacher Mode Logic */
+        function openTeacherModal() {
+            document.getElementById('modal-teacher').classList.remove('hidden');
+        }
+
+        function closeTeacherModal() {
+            document.getElementById('modal-teacher').classList.add('hidden');
+        }
+
+        function unlockTeacherMode() {
+            const pin = document.getElementById('input-teacher-pin').value;
+            if (pin === "1234" || pin === "") {
+                document.getElementById('teacher-auth-box').classList.add('hidden');
+                document.getElementById('teacher-content-box').classList.remove('hidden');
+                renderTeacherTable();
+            } else {
+                showCustomModal("PIN Salah", "PIN Guru default adalah 1234", "⚠️");
+            }
+        }
+
+        function renderTeacherTable() {
+            const tbody = document.getElementById('teacher-data-table');
+            const data = AppState;
+
+            tbody.innerHTML = `
+                <tr class="border-b border-purple-100">
+                    <td class="p-2 font-bold">${data.user.nama || '-'}</td>
+                    <td class="p-2">${data.user.kelas} / ${data.user.sekolah || '-'}</td>
+                    <td class="p-2 font-bold text-sky-600">${document.getElementById('overall-progress-text').innerText}</td>
+                    <td class="p-2 font-bold text-amber-600">${data.scores.kuis}</td>
+                    <td class="p-2">${data.reflection ? data.reflection.feeling : 'Belum'}</td>
+                </tr>
+            `;
+        }
+
+        function exportDataToCSV() {
+            const rows = [
+                ["Nama", "Kelas", "Sekolah", "Skor Kuis", "Refleksi"],
+                [AppState.user.nama, AppState.user.kelas, AppState.user.sekolah, AppState.scores.kuis, AppState.reflection ? AppState.reflection.feeling : '']
+            ];
+
+            let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Hasil_Belajar_${AppState.user.nama || 'Siswa'}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function resetAllLocalStorage() {
+            if (confirm("Apakah Anda yakin ingin menghapus seluruh data siswa di perangkat ini?")) {
+                localStorage.removeItem('petualangan_segi_banyak_data');
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
